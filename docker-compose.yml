@@ -1,0 +1,39 @@
+version: '2'
+
+services:
+  loadbalancer:
+    image: dockercloud/haproxy
+    depends_on:
+      - djangoapp
+    ports:
+      - 80:80
+    networks:
+      - app-network
+    links:
+      - djangoapp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  mongodb:
+    image: mongo:latest
+    networks:
+      - app-network
+    ports:
+      - 27000:27017
+  djangoapp:
+    depends_on:
+      - mongodb
+    image: francoburga/djangoapp:latest
+    environment:
+      DJANGO_ALLOWED_HOSTS: '*'
+      DJANGO_APP: djangoapp.wsgi
+      MONGODB_HOST: mongodb
+      MONGODB_NAME: database_name
+      VIRTUAL_HOST: '*'
+    networks:
+      - app-network
+    volumes:
+      - .:/app
+
+networks:
+  app-network:
+    driver: bridge

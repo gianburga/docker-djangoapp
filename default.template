@@ -1,0 +1,28 @@
+upstream webapp {
+    server 127.0.0.1:8000;
+}
+
+server {
+    listen ${NGINX_PORT} default_server;
+    listen [::]:${NGINX_PORT} default_server;
+
+    # SSL configuration
+    #
+    # listen 443 ssl default_server;
+    # listen [::]:443 ssl default_server;
+
+    server_name ${NGINX_HOST};
+
+    location / {
+        include proxy_params;
+        proxy_pass http://webapp;
+    }
+
+    location /static/ {
+        alias /app/staticfiles/;
+    }
+
+    location /media/ {
+        alias /app/mediafiles/;
+    }
+}
