@@ -1,11 +1,11 @@
 #!/bin/bash
 set -m
 
-if [ -f /app/requirements.txt ]; then
-    echo "*** install requirements ***"
-    pip install -r /app/requirements.txt
+if [ -f /app/$PIP_REQUIREMENTS_FILE ]; then
+    echo "*** install ${PIP_REQUIREMENTS_FILE} file ***"
+    pip install -r /app/$PIP_REQUIREMENTS_FILE
 else
-    echo "requirements.txt not found!"
+    echo "${PIP_REQUIREMENTS_FILE} not found!"
 fi
 
 if [ -f /app/manage.py ]; then
@@ -15,15 +15,17 @@ else
     echo "manage.py not found!"
 fi
 
-echo "- NGINX ENVS"
+echo "*** NGINX environment variables ***"
 env | grep NGINX
 envsubst < /nginx/default.template > /etc/nginx/sites-available/default
 
-echo "- NGINX configuration check"
+echo "*** NGINX configuration check ***"
 nginx -t
-echo "- NGINX service restart"
+echo "*** NGINX service restart ***"
 service nginx restart && service nginx status
 
-echo "GUNICORN ENVS"
+echo "*** GUNICORN environment variables ***"
 env | grep GUNICORN
+
+echo "*** run django application ***"
 gunicorn $DJANGO_APP -w $GUNICORN_WORKERS --log-file - --log-level $GUNICORN_LOG_LEVEL
